@@ -28,18 +28,21 @@ and setting that cluster up for long run testing and monitoring of CoreDNS under
    1. Init and execute terraform
       * `terraform init ../../contrib/terraform/packet/`
       * `terraform apply -var-file=cluster.tfvars ../../contrib/terraform/packet`
-   1. Extract the provisioned IPs (needed in next step):
+   1. Extract the provisioned IPs:
       1. `cat terraform.tfstate | jq '.resources[].instances[].attributes.access_public_ipv4'`
+   1. Enable forwarding in each provisioned system
+	  1. `sysctl -w net.ipv4.conf.all.forwarding=1`
+	  1. `sed -i 's/#net\.ipv4\.ip_forward=./net.ipv4.ip_forward=1/g' /etc/sysctl.conf`
 
 1. Build K8s Cluster on Systems
    1. Run kubespray's ansible-playbook builder python script, passing space delimitd ips of provisioned packet servers e.g.
       * `CONFIG_FILE=inventory/my_lrt_instance/hosts.yml python3 ../../contrib/inventory_builder/inventory.py 1.2.3.4 5.6.7.8 9.10.11.12 13.14.15.16`
-   1. Adjust resulting ansible-playbook... e.g.
-      * remove node local dns
-      * Make non-HA master unless desired
+   1. Adjust resulting ansible-playbook. Specifically in `inventory/lrt1/group_vars/k8s-cluster/k8s-cluster.yml`
+      * set pod and service cidrs (that do not collide with the packet 10.0.0.0/8 internal subnet)
+      * remove node local dns option
    1. Execute ansible-playbook e.g.
-      * ansible-playbook -i inventory/lrt1/inventory.ini cluster.yml -b -v
-   1. Adjust CoreDNS deployment as needed (e.g. version)
+      * `ansible-playbook -i inventory/lrt1/inventory.ini cluster.yml -b -v`
+   1. Adjust CoreDNS deployment as needed (e.g. custom build, version, custom config)
 
 1. Add Monitoring Infrastructure
    1. Apply prometheus yaml
