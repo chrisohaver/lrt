@@ -76,4 +76,4 @@ spec:
         - name: kubernoisy
           image: chrisohaver/kubernoisy:latest
           imagePullPolicy: Always
-          args: ["-namespace","kubernoisy", "-verbose", "-ops", "1"]
+          args: ["-namespace","kubernoisy", "-verbose", "-ops", "0.5"]

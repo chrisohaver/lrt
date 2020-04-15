@@ -40,7 +40,6 @@ metadata:
   annotations:
     prometheus.io/scrape: 'true'
     prometheus.io/port:   '9090'
-
 spec:
   selector:
     app: prometheus-server
@@ -85,6 +84,5 @@ spec:
           configMap:
             defaultMode: 420
             name: prometheus-server-conf
-
         - name: prometheus-storage-volume
           emptyDir: {}
