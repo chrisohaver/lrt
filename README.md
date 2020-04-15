@@ -57,6 +57,7 @@ and setting that cluster up for long run testing and monitoring of CoreDNS under
    1. Apply prometheus yaml
       * prometheus-cluster-monitoring-config.yaml 
       * prometheus.yaml
+      * node-exporter.yaml
    1. Add Grafana datasource
 
 1. Start Test
