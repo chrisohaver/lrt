@@ -28,7 +28,7 @@ and setting that cluster up for long run testing and monitoring of CoreDNS under
    1. Init and execute terraform
       * `terraform init ../../contrib/terraform/packet/`
       * `terraform apply -var-file=cluster.tfvars ../../contrib/terraform/packet`
-   1. Disable swap and enable ip forwarding in all systems:
+   1. Disable swap and enable ip forwarding in all systems (Note: I think Kubespray might do this for us, so this step may be unnecessary):
       1. In one line: 
       ```
       for a in `cat terraform.tfstate | jq '.resources[].instances[].attributes.access_public_ipv4'`; do a=`echo $a | tr -d '"'`; ssh root@$a "sysctl -w net.ipv4.conf.all.forwarding=1 && sed -i 's/#net\.ipv4\.ip_forward=./net.ipv4.ip_forward=1/g' /etc/sysctl.conf && swapoff -a && sudo sed -i '/ swap / s/^/#/' /etc/fstab"; done;
