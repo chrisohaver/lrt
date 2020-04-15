@@ -21,27 +21,36 @@ and setting that cluster up for long run testing and monitoring of CoreDNS under
       * You can create an API token if you dont have one in https://app.packet.net/
    1. link the packet hosts to your project dir:
       * `ln -s ../../contrib/terraform/packet/hosts`
-   1. copy the terraform packet sample template files to your project dir:
-      * `cp -LRp ../../contrib/terraform/packet/sample-inventory .`
+   1. copy the terraform Packet sample template files to your project dir:
+      * `cp -LRp ../../contrib/terraform/packet/sample-inventory/ .`
    1. Adjust default terraform packet template settings in `cluster.tfvars` ...
       * set project id (can be obtained from https://www.packet.com/developers/api/)
    1. Init and execute terraform
       * `terraform init ../../contrib/terraform/packet/`
       * `terraform apply -var-file=cluster.tfvars ../../contrib/terraform/packet`
-   1. Extract the provisioned IPs:
-      1. `cat terraform.tfstate | jq '.resources[].instances[].attributes.access_public_ipv4'`
-   1. Enable forwarding in each provisioned system
-	  1. `sysctl -w net.ipv4.conf.all.forwarding=1`
-	  1. `sed -i 's/#net\.ipv4\.ip_forward=./net.ipv4.ip_forward=1/g' /etc/sysctl.conf`
+   1. Disable swap and enable ip forwarding in all systems:
+      1. In one line: 
+      ```
+      for a in `cat terraform.tfstate | jq '.resources[].instances[].attributes.access_public_ipv4'`; do a=`echo $a | tr -d '"'`; ssh root@$a "sysctl -w net.ipv4.conf.all.forwarding=1 && sed -i 's/#net\.ipv4\.ip_forward=./net.ipv4.ip_forward=1/g' /etc/sysctl.conf && swapoff -a && sudo sed -i '/ swap / s/^/#/' /etc/fstab"; done;
+      ```
+      1. Or manually:
+         1. Extract the provisioned IPs:
+            1. `cat terraform.tfstate | jq '.resources[].instances[].attributes.access_public_ipv4'`
+         1. Enable forwarding in each provisioned system
+	        1. `sysctl -w net.ipv4.conf.all.forwarding=1` && `sed -i 's/#net\.ipv4\.ip_forward=./net.ipv4.ip_forward=1/g' /etc/sysctl.conf`
+         1. Disable swap in each system
+            1. `swapoff -a && sed -i '/\sswap\s/ s/^/#/' /etc/fstab`
+`
 
 1. Build K8s Cluster on Systems
    1. Run kubespray's ansible-playbook builder python script, passing space delimitd ips of provisioned packet servers e.g.
-      * `CONFIG_FILE=inventory/my_lrt_instance/hosts.yml python3 ../../contrib/inventory_builder/inventory.py 1.2.3.4 5.6.7.8 9.10.11.12 13.14.15.16`
-   1. Adjust resulting ansible-playbook. Specifically in `inventory/lrt1/group_vars/k8s-cluster/k8s-cluster.yml`
+      * `CONFIG_FILE=hosts.yml python3 ../../contrib/inventory_builder/inventory.py 1.2.3.4 5.6.7.8 9.10.11.12 13.14.15.16`
+   1. Adjust `hosts.yml` IPs, and master nodes.
+   1. Adjust resulting ansible-playbook. Specifically in `group_vars/k8s-cluster/k8s-cluster.yml`
       * set pod and service cidrs (that do not collide with the packet 10.0.0.0/8 internal subnet)
-      * remove node local dns option
+      * remove node local dns option if desired
    1. Execute ansible-playbook e.g.
-      * `ansible-playbook -i inventory/lrt1/inventory.ini cluster.yml -b -v`
+      * `sudo ansible-playbook -i hosts.yml ../../cluster.yml -b --become-user=root -v`
    1. Adjust CoreDNS deployment as needed (e.g. custom build, version, custom config)
 
 1. Add Monitoring Infrastructure
