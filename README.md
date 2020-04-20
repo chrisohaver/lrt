@@ -25,6 +25,7 @@ and setting that cluster up for long run testing and monitoring of CoreDNS under
       * `cp -LRp ../../contrib/terraform/packet/sample-inventory/ .`
    1. Adjust default terraform packet template settings in `cluster.tfvars` ...
       * set project id (can be obtained from https://www.packet.com/developers/api/)
+      * set public key path to blank if your keys are already deployed to the packet machines: `public_key_path = ""`
    1. Init and execute terraform
       * `terraform init ../../contrib/terraform/packet/`
       * `terraform apply -var-file=cluster.tfvars ../../contrib/terraform/packet`
