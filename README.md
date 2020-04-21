@@ -30,18 +30,7 @@ and setting that cluster up for long run testing and monitoring of CoreDNS under
    1. Init and execute terraform
       * `terraform init ../../contrib/terraform/packet/`
       * `terraform apply -var-file=cluster.tfvars ../../contrib/terraform/packet`
-   1. Disable swap and enable ip forwarding in all systems (Note: I think Kubespray might do this for us, so this step may be unnecessary):
-      1. In one line: 
-      ```
-      for a in `cat terraform.tfstate | jq '.resources[].instances[].attributes.access_public_ipv4'`; do a=`echo $a | tr -d '"'`; ssh root@$a "sysctl -w net.ipv4.conf.all.forwarding=1 && sed -i 's/#net\.ipv4\.ip_forward=./net.ipv4.ip_forward=1/g' /etc/sysctl.conf && swapoff -a && sudo sed -i '/ swap / s/^/#/' /etc/fstab"; done;
-      ```
-      1. Or manually:
-         1. Extract the provisioned IPs:
-            1. `cat terraform.tfstate | jq '.resources[].instances[].attributes.access_public_ipv4'`
-         1. Enable forwarding in each provisioned system
-	        1. `sysctl -w net.ipv4.conf.all.forwarding=1` && `sed -i 's/#net\.ipv4\.ip_forward=./net.ipv4.ip_forward=1/g' /etc/sysctl.conf`
-         1. Disable swap in each system
-            1. `swapoff -a && sed -i '/\sswap\s/ s/^/#/' /etc/fstab`
+   1. `ssh` into each system to accept the rsa fingerprint into your ssh known hosts. 
 `
 
 1. Build K8s Cluster on Systems
@@ -50,9 +39,9 @@ and setting that cluster up for long run testing and monitoring of CoreDNS under
    1. Adjust `hosts.yml` IPs, and master nodes.
    1. Adjust resulting ansible-playbook. Specifically in `group_vars/k8s-cluster/k8s-cluster.yml`
       * set pod and service cidrs (that do not collide with the packet 10.0.0.0/8 internal subnet)
-      * remove node local dns option if desired
+      * disable nodelocal dns option if desired
    1. Execute ansible-playbook e.g.
-      * `sudo ansible-playbook -i hosts.yml ../../cluster.yml -b --become-user=root -v`
+      * `ansible-playbook -i hosts.yml ../../cluster.yml -b --user=root -v`
    1. Adjust CoreDNS deployment as needed (e.g. custom build, version, custom config)
 
 1. Add Monitoring Infrastructure
