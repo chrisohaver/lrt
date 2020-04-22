@@ -30,7 +30,7 @@ and setting that cluster up for long run testing and monitoring of CoreDNS under
    1. Init and execute terraform
       * `terraform init ../../contrib/terraform/packet/`
       * `terraform apply -var-file=cluster.tfvars ../../contrib/terraform/packet`
-   1. `ssh` into each system to accept the rsa fingerprint into your ssh known hosts. 
+   1. Manually `ssh` into each system to accept the rsa fingerprint into your known hosts.
 `
 
 1. Build K8s Cluster on Systems
