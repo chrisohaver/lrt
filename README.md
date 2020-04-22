@@ -31,6 +31,7 @@ and setting that cluster up for long run testing and monitoring of CoreDNS under
       * `terraform init ../../contrib/terraform/packet/`
       * `terraform apply -var-file=cluster.tfvars ../../contrib/terraform/packet`
    1. Manually `ssh` into each system to accept the rsa fingerprint into your known hosts.
+   1. Update packages in each system: `apt-get update` then `apt-get upgrade`
 `
 
 1. Build K8s Cluster on Systems
