@@ -32,7 +32,6 @@ and setting that cluster up for long run testing and monitoring of CoreDNS under
       * `terraform apply -var-file=cluster.tfvars ../../contrib/terraform/packet`
    1. Manually `ssh` into each system to accept the rsa fingerprint into your known hosts.
    1. Update packages in each system: `apt-get update` then `apt-get upgrade`
-`
 
 1. Build K8s Cluster on Systems
    1. Run kubespray's ansible-playbook builder python script, passing space delimitd ips of provisioned packet servers e.g.
@@ -51,8 +50,9 @@ and setting that cluster up for long run testing and monitoring of CoreDNS under
       * prometheus.yaml
       * node-exporter.yaml
    1. Add Grafana datasource
+      * In prometheus.yaml, the prometheus service is exposed via node port on 30000. e.g. http://master-node-ip:30000
 
 1. Start Test
-   1. Apply dnsdrone.yaml, scale accordingly
-   1. Apply kubernoisy.yaml
+   1. To start a DNS query load: apply dnsdrone.yaml, scale accordingly
+   1. To start service/pod churn and DNS validation: apply kubernoisy.yaml
 
